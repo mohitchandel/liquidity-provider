@@ -3,3 +3,4 @@ scripts
 test
 node_modules
 artifacts
+.env
