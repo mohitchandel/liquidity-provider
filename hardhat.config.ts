@@ -23,13 +23,18 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.0",
+  solidity: "0.8.1",
   networks: {
-    rinkeby: {
-      url: process.env.ROPSTEN_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    hardhat:{
+      forking: {
+        url: "https://eth-mainnet.alchemyapi.io/v2/PEZxQoww7t9wiKhPXGGF3eKnbf_M_4e4",
+      }
     },
+    // rinkeby: {
+    //   url: "https://eth-mainnet.alchemyapi.io/v2/<key>" || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
   },
 };
 

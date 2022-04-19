@@ -2,31 +2,54 @@ import { expect } from "chai";
 import { artifacts, ethers } from "hardhat";
 const config = require("../config.ts");
 
+let admin: { address: any; };
+let contract : any;
+let firstToken : any;
+let secondToken : any;
+
+
 describe("Add Liquidity", function () {
 
-  let admin: { address: any; };
-  let contract : any;
-  let tokenA : any;
-  let tokenB : any;
-
   beforeEach(async function () {
-    // getting admin address
-    [admin] = await ethers.getSigners();
 
-    tokenA = "0xc778417E063141139Fce010982780140Aa0cD5Ab"; // WETH
-    tokenB = "0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b"; // USDC
+    // Deploying first token 
+    const FirstToken = await ethers.getContractFactory("FirstToken");
+    firstToken = await FirstToken.deploy();
+    await firstToken.deployed();
+
+    // Deploying second token 
+    const SecondToken = await ethers.getContractFactory("SecondToken");
+    secondToken = await SecondToken.deploy();
+    await secondToken.deployed();
 
     // Deploying contract 
     const LiquidityProvider = await ethers.getContractFactory("LiquidityProvider");
-    contract = await LiquidityProvider.deploy(config.uniswapFactory, config.uniswapRouter);
+    contract = await LiquidityProvider.deploy(firstToken.address, secondToken.address);
     await contract.deployed();
 
   });
 
 
   it("Should add liquidity", async function () {
-    // Minting new tokens
-    const addLiquidity = await contract.addLiquidity(tokenA, tokenB, 10000, 10000)
+    await firstToken.approve(contract.address, ethers.BigNumber.from("1000000000000000000000"))
+    await secondToken.approve(contract.address, ethers.BigNumber.from("1000000000000000000000"))
+
+    const addLiquidity = await contract.addLiquidity(ethers.BigNumber.from("100000000000000000000"), ethers.BigNumber.from("100000000000000000000"))
     await addLiquidity.wait()
+    expect(addLiquidity).to.emit(contract, "AddLiquidityEvent");
   });
+
+  it("Should remove liquidity", async function () {
+    await firstToken.approve(contract.address, ethers.BigNumber.from("1000000000000000000000"))
+    await secondToken.approve(contract.address, ethers.BigNumber.from("1000000000000000000000"))
+
+    const addLiquidity = await contract.addLiquidity(ethers.BigNumber.from("100000000000000000000"), ethers.BigNumber.from("100000000000000000000"))
+    await addLiquidity.wait()
+    expect(addLiquidity).to.emit(contract, "AddLiquidityEvent")
+
+    const removeLiquidity = await contract.removeLiquidity()
+    await removeLiquidity.wait()
+    expect(removeLiquidity).to.emit(contract, "RemoveLiquidityEvent")
+  });
+
 });

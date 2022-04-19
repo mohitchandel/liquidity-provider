@@ -1,20 +1,28 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.1;
 
 import "./interfaces/IUniswapV2Router.sol";
 import "./interfaces/IUniswapV2Factory.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "./FirstToken.sol";
+import "./SecondToken.sol";
 
 contract LiquidityProvider {
+    using SafeERC20 for ERC20;
+
+    ERC20 public tokenA;
+    ERC20 public tokenB;
 
     // uniswapFactory on Rinkeby Testnet
     address public uniswapFactory = 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f;
-    // UniswapV2Router v02 on Rinkeby Testnet
+    // UniswapV2Router on Rinkeby Testnet
     address public uniswapRouter = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
-    // constructor(address _uniswapFactory, address _uniswapRouter) {
-
-    // }
+    constructor(ERC20 _tokenA, ERC20 _tokenB) {
+        tokenA = _tokenA;
+        tokenB = _tokenB;
+    }
 
     event AddLiquidityEvent(
         address admin,
@@ -25,21 +33,17 @@ contract LiquidityProvider {
     event RemoveLiquidityEvent(address admin, uint256 anountA, uint256 amountB);
 
     // Add Liquidity
-    function addLiquidity(
-        address _tokenA,
-        address _tokenB,
-        uint256 _amountA,
-        uint256 _amountB
-    ) external {
-        approveTokenSpend(_tokenA, _tokenB, _amountA, _amountB);
-        transferToken(_tokenA, _tokenB, _amountA, _amountB);
+    function addLiquidity(uint256 _amountA, uint256 _amountB) external {
+        transferToken(tokenA, tokenB, _amountA, _amountB);
+        approveTokenSpend(tokenA, tokenB);
+
         (
             uint256 amountTokenA,
             uint256 amountTokenB,
             uint256 liquidity
         ) = IUniswapV2Router(uniswapRouter).addLiquidity(
-                _tokenA,
-                _tokenB,
+                address(tokenA),
+                address(tokenB),
                 _amountA,
                 _amountB,
                 1,
@@ -57,44 +61,38 @@ contract LiquidityProvider {
     }
 
     // remove liquidity
-    function removeLiquidity(address _tokenA, address _tokenB) external {
+    function removeLiquidity() external {
 
         address tokenPair = IUniswapV2Factory(uniswapFactory).getPair(
-            _tokenA,
-            _tokenB
+            address(tokenA),
+            address(tokenB)
         );
-
         uint256 totalLiquidity = ERC20(tokenPair).balanceOf(address(this));
-        ERC20(tokenPair).approve(uniswapRouter, totalLiquidity);
+        ERC20(tokenPair).safeApprove(uniswapRouter, totalLiquidity);
 
         (uint256 amountTokenA, uint256 amountTokenB) = IUniswapV2Router(uniswapRouter).removeLiquidity(
-            _tokenA,
-            _tokenB,
-            totalLiquidity,
-            1,
-            1,
-            address(this),
-            block.timestamp
-        );
-        
+                address(tokenA),
+                address(tokenB),
+                totalLiquidity,
+                1,
+                1,
+                address(this),
+                block.timestamp
+            );
+
         emit RemoveLiquidityEvent(msg.sender, amountTokenA, amountTokenB);
     }
 
     // token aloowance
-    function approveTokenSpend(
-        address _tokenA,
-        address _tokenB,
-        uint256 _amountA,
-        uint256 _amountB
-    ) internal {
-        ERC20(_tokenA).approve(uniswapRouter, _amountA);
-        ERC20(_tokenB).approve(uniswapRouter, _amountB);
+    function approveTokenSpend(ERC20 _tokenA, ERC20 _tokenB) internal {
+        ERC20(_tokenA).safeApprove(uniswapRouter, (2**256 - 1));
+        ERC20(_tokenB).safeApprove(uniswapRouter, (2**256 - 1));
     }
 
     // token transfer
     function transferToken(
-        address _tokenA,
-        address _tokenB,
+        ERC20 _tokenA,
+        ERC20 _tokenB,
         uint256 _amountA,
         uint256 _amountB
     ) internal {
