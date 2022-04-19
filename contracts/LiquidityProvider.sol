@@ -3,19 +3,18 @@ pragma solidity ^0.8.0;
 
 import "./interfaces/IUniswapV2Router.sol";
 import "./interfaces/IUniswapV2Factory.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract LiquidityProvider {
 
-    address public uniswapFactory;
-    address public uniswapRouter;
+    // uniswapFactory on Rinkeby Testnet
+    address public uniswapFactory = 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f;
+    // UniswapV2Router v02 on Rinkeby Testnet
+    address public uniswapRouter = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
-    constructor(address _uniswapFactory, address _uniswapRouter) {
-        // uniswapFactory on Rinkeby Testnet
-        uniswapFactory = _uniswapFactory;
-        // UniswapV2Router v02 on Rinkeby Testnet
-        uniswapRouter = _uniswapRouter;
-    }
+    // constructor(address _uniswapFactory, address _uniswapRouter) {
+
+    // }
 
     event AddLiquidityEvent(
         address admin,
@@ -31,10 +30,9 @@ contract LiquidityProvider {
         address _tokenB,
         uint256 _amountA,
         uint256 _amountB
-    ) external payable {
+    ) external {
         approveTokenSpend(_tokenA, _tokenB, _amountA, _amountB);
-        
-
+        transferToken(_tokenA, _tokenB, _amountA, _amountB);
         (
             uint256 amountTokenA,
             uint256 amountTokenB,
@@ -60,25 +58,25 @@ contract LiquidityProvider {
 
     // remove liquidity
     function removeLiquidity(address _tokenA, address _tokenB) external {
+
         address tokenPair = IUniswapV2Factory(uniswapFactory).getPair(
             _tokenA,
             _tokenB
         );
-        uint256 liquidity = IERC20(tokenPair).balanceOf(address(this));
 
-        IERC20(tokenPair).approve(uniswapRouter, liquidity);
+        uint256 totalLiquidity = ERC20(tokenPair).balanceOf(address(this));
+        ERC20(tokenPair).approve(uniswapRouter, totalLiquidity);
 
-        (uint256 amountTokenA, uint256 amountTokenB) = IUniswapV2Router(
-            uniswapRouter
-        ).removeLiquidity(
-                _tokenA,
-                _tokenB,
-                liquidity,
-                1,
-                1,
-                address(this),
-                block.timestamp
-            );
+        (uint256 amountTokenA, uint256 amountTokenB) = IUniswapV2Router(uniswapRouter).removeLiquidity(
+            _tokenA,
+            _tokenB,
+            totalLiquidity,
+            1,
+            1,
+            address(this),
+            block.timestamp
+        );
+        
         emit RemoveLiquidityEvent(msg.sender, amountTokenA, amountTokenB);
     }
 
@@ -89,8 +87,8 @@ contract LiquidityProvider {
         uint256 _amountA,
         uint256 _amountB
     ) internal {
-        IERC20(_tokenA).approve(uniswapRouter, _amountA);
-        IERC20(_tokenB).approve(uniswapRouter, _amountB);
+        ERC20(_tokenA).approve(uniswapRouter, _amountA);
+        ERC20(_tokenB).approve(uniswapRouter, _amountB);
     }
 
     // token transfer
@@ -100,7 +98,7 @@ contract LiquidityProvider {
         uint256 _amountA,
         uint256 _amountB
     ) internal {
-        IERC20(_tokenA).transferFrom(msg.sender, address(this), _amountA);
-        IERC20(_tokenB).transferFrom(msg.sender, address(this), _amountB);
+        ERC20(_tokenA).transferFrom(msg.sender, address(this), _amountA);
+        ERC20(_tokenB).transferFrom(msg.sender, address(this), _amountB);
     }
 }
