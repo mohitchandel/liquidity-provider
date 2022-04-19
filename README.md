@@ -1,46 +1,68 @@
-# Advanced Sample Hardhat Project
+## Liquidity Smart Contract
 
-This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
+This Project is deployed on the Rinkeby testnet
 
-The project comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts. It also comes with a variety of other tools, preconfigured to work with the project code.
+ERC20 Token (First Token) address: [0x314D39d60121482490F8982bd6b7dC208C335433](https://rinkeby.etherscan.io/address/0x314D39d60121482490F8982bd6b7dC208C335433)
 
-Try running some of the following tasks:
+ERC20 Token (Second Token) address: [0xc29C8e2675c6c53AE13572a3C200d16574a405f4](https://rinkeby.etherscan.io/address/0xc29C8e2675c6c53AE13572a3C200d16574a405f4)
 
-```shell
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-npx hardhat help
-REPORT_GAS=true npx hardhat test
-npx hardhat coverage
-npx hardhat run scripts/deploy.ts
-TS_NODE_FILES=true npx ts-node scripts/deploy.ts
-npx eslint '**/*.{js,ts}'
-npx eslint '**/*.{js,ts}' --fix
-npx prettier '**/*.{json,sol,md}' --check
-npx prettier '**/*.{json,sol,md}' --write
-npx solhint 'contracts/**/*.sol'
-npx solhint 'contracts/**/*.sol' --fix
+Liquidity contract address: [0x4Dd5f61D06e572083C0732F6DB7f522a01A200bC](https://rinkeby.etherscan.io/address/0x4Dd5f61D06e572083C0732F6DB7f522a01A200bC)
+
+### Usage
+
+Before running any command, make sure to install dependencies:
+
+`npm install`
+
+#### Compile
+
+Compile the smart contracts with Hardhat: 
+
+`npx hardhat compile`
+
+#### Test
+
+Run the tests:
+
+`npx hardhat test`
+
+#### Deploy
+
+deploy contract to network: 
+
+`npx hardhat run --network rinkeby scripts/deploy.js`
+
+
+Liquidity provider smart contract will be created after the creation of two ERC20 token (First Token, Second Token) because the liquidity smart contract need parameters of both tokens address in its constructor.
+
+`constructor(ERC20 _tokenA, ERC20 _tokenB) {}`
+
+functions need to call before adding liquidity in both ERC20 tokens
+
 ```
+approve(address spender, uint256 amount)
+``` 
 
-# Etherscan verification
+this function is used to approve contract address to spend on behalf of user.
 
-To try out Etherscan verification, you first need to deploy a contract to an Ethereum network that's supported by Etherscan, such as Ropsten.
+The function takes the following arguments:
 
-In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. Enter your Etherscan API key, your Ropsten node URL (eg from Alchemy), and the private key of the account which will send the deployment transaction. With a valid .env file in place, first deploy your contract:
+- `spender`: This is the address of the spender to whom the approval rights should be given or revoked from the approver.
+- `amount`: This is amount of tokens can be spend.
 
-```shell
-hardhat run --network ropsten scripts/deploy.ts
-```
 
-Then, copy the deployment address and paste it in to replace `DEPLOYED_CONTRACT_ADDRESS` in this command:
+### How to add liquidity
 
-```shell
-npx hardhat verify --network ropsten DEPLOYED_CONTRACT_ADDRESS "Hello, Hardhat!"
-```
+In liquidity provider smart contract function `addLiquidity()` is used to add liquidity for the ERC20 tokens.
 
-# Performance optimizations
+this function has following arguments:
 
-For faster runs of your tests and scripts, consider skipping ts-node's type checking by setting the environment variable `TS_NODE_TRANSPILE_ONLY` to `1` in hardhat's environment. For more details see [the documentation](https://hardhat.org/guides/typescript.html#performance-optimizations).
+- `uint256 _amountA` : It is the token amount of first token.
+- `uint256 _amountB` : It is the token amount of second token.
+
+
+### How to remove liquidity
+
+The `removeLiquidity()` function is used to complete the process of removing liquidity
+
+This function get the pair address and get the provided liquidity amount and then run the uniswap router function of `removeLiquidity`

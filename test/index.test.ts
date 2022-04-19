@@ -1,6 +1,5 @@
 import { expect } from "chai";
 import { artifacts, ethers } from "hardhat";
-const config = require("../config.ts");
 
 let admin: { address: any; };
 let contract : any;

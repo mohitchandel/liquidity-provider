@@ -6,6 +6,7 @@ import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
+const conf = require("./secret");
 
 dotenv.config();
 
@@ -27,14 +28,13 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat:{
       forking: {
-        url: "https://eth-mainnet.alchemyapi.io/v2/PEZxQoww7t9wiKhPXGGF3eKnbf_M_4e4",
+        url: "https://eth-rinkeby.alchemyapi.io/v2/PEZxQoww7t9wiKhPXGGF3eKnbf_M_4e4",
       }
     },
-    // rinkeby: {
-    //   url: "https://eth-mainnet.alchemyapi.io/v2/<key>" || "",
-    //   accounts:
-    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    // },
+    rinkeby: {
+      url: "https://eth-rinkeby.alchemyapi.io/v2/PEZxQoww7t9wiKhPXGGF3eKnbf_M_4e4" || "",
+      accounts: conf.PRIVATE_KEY !== undefined ? [conf.PRIVATE_KEY] : [],
+    },
   },
 };
 
