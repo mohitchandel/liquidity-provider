@@ -61,4 +61,17 @@ describe("Add Liquidity", function () {
     expect(swapToken).to.emit(contract, "TokenSwapEvent")
   });
 
+  it("Should swap tokens for tokens", async function () {
+    await firstToken.approve(contract.address, ethers.BigNumber.from("1000000000000000000000"))
+    await secondToken.approve(contract.address, ethers.BigNumber.from("1000000000000000000000"))
+
+    const addLiquidity = await contract.addLiquidity(ethers.BigNumber.from("100000000000000000000"), ethers.BigNumber.from("100000000000000000000"))
+    await addLiquidity.wait()
+    expect(addLiquidity).to.emit(contract, "AddLiquidityEvent")
+
+    const swapToken = await contract.swapTokens(ethers.BigNumber.from("1000000000000000000"), firstToken.address, secondToken.address)
+    await swapToken.wait()
+    expect(swapToken).to.emit(contract, "TokenSwapEvent")
+  });
+
 });

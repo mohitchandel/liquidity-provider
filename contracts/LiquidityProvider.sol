@@ -88,10 +88,34 @@ contract LiquidityProvider {
         emit RemoveLiquidityEvent(msg.sender, amountTokenA, amountTokenB);
     }
 
+    function swapTokens(uint256 _tokenAmount, address _tokenA, address _tokenB) external payable {
+        address[] memory path;
+        path = new address[](2);
+        path[0] = _tokenA;
+        path[1] = _tokenB;
+
+        ERC20(_tokenA).transferFrom(msg.sender, address(this), _tokenAmount);
+        ERC20(_tokenA).approve(uniswapRouter, _tokenAmount);
+        
+        uint amountOut = IUniswapV2Router(uniswapRouter).getAmountsOut(
+            _tokenAmount,
+            path
+        )[1];
+        
+        (uint[] memory amounts) = IUniswapV2Router(uniswapRouter).swapExactTokensForTokens(
+            _tokenAmount, 
+            amountOut,
+            path, 
+            msg.sender, 
+            block.timestamp
+            );
+        emit TokenSwapEvent(amounts);
+    }
+
     function swapEThforTokens(uint256 _ethAmount, address _tokenAddress)
         external
         payable
-    {
+    {   
         address[] memory path;
         path = new address[](2);
         path[0] = IUniswapV2Router(uniswapRouter).WETH();
