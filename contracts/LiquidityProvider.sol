@@ -16,13 +16,15 @@ contract LiquidityProvider {
 
     // uniswapFactory on Rinkeby Testnet
     address public uniswapFactory = 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f;
-    // UniswapV2Router on Rinkeby Testnet
+    // UniswapV2Router v02 on Rinkeby Testnet
     address public uniswapRouter = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
     constructor(ERC20 _tokenA, ERC20 _tokenB) {
         tokenA = _tokenA;
         tokenB = _tokenB;
     }
+
+    receive() external payable {}
 
     event AddLiquidityEvent(
         address admin,
@@ -31,6 +33,7 @@ contract LiquidityProvider {
         uint256 liquidity
     );
     event RemoveLiquidityEvent(address admin, uint256 anountA, uint256 amountB);
+    event TokenSwapEvent(uint256[] amounts);
 
     // Add Liquidity
     function addLiquidity(uint256 _amountA, uint256 _amountB) external {
@@ -61,18 +64,20 @@ contract LiquidityProvider {
     }
 
     // remove liquidity
-    function removeLiquidity() external {
-
+    function removeLiquidity(address _tokenA, address _tokenB) external {
         address tokenPair = IUniswapV2Factory(uniswapFactory).getPair(
-            address(tokenA),
-            address(tokenB)
+            _tokenA,
+            _tokenB
         );
-        uint256 totalLiquidity = ERC20(tokenPair).balanceOf(address(this));
-        ERC20(tokenPair).safeApprove(uniswapRouter, totalLiquidity);
 
-        (uint256 amountTokenA, uint256 amountTokenB) = IUniswapV2Router(uniswapRouter).removeLiquidity(
-                address(tokenA),
-                address(tokenB),
+        uint256 totalLiquidity = ERC20(tokenPair).balanceOf(address(this));
+        ERC20(tokenPair).approve(uniswapRouter, totalLiquidity);
+
+        (uint256 amountTokenA, uint256 amountTokenB) = IUniswapV2Router(
+            uniswapRouter
+        ).removeLiquidity(
+                _tokenA,
+                _tokenB,
                 totalLiquidity,
                 1,
                 1,
@@ -81,6 +86,30 @@ contract LiquidityProvider {
             );
 
         emit RemoveLiquidityEvent(msg.sender, amountTokenA, amountTokenB);
+    }
+
+    function swapEThforTokens(uint256 _ethAmount, address _tokenAddress)
+        external
+        payable
+    {
+        address[] memory path;
+        path = new address[](2);
+        path[0] = IUniswapV2Router(uniswapRouter).WETH();
+        path[1] = _tokenAddress;
+
+        uint256 amountOut = IUniswapV2Router(uniswapRouter).getAmountsOut(
+            _ethAmount,
+            path
+        )[0];
+
+        uint256[] memory amounts = IUniswapV2Router(uniswapRouter)
+            .swapExactETHForTokens{value: msg.value}(
+            amountOut,
+            path,
+            msg.sender,
+            block.timestamp
+        );
+        emit TokenSwapEvent(amounts);
     }
 
     // token aloowance

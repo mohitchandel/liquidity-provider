@@ -2,15 +2,15 @@ import { expect } from "chai";
 import { artifacts, ethers } from "hardhat";
 
 let admin: { address: any; };
-let contract : any;
-let firstToken : any;
-let secondToken : any;
+let contract: any;
+let firstToken: any;
+let secondToken: any;
 
 
 describe("Add Liquidity", function () {
 
   beforeEach(async function () {
-
+    [admin] = await ethers.getSigners();
     // Deploying first token 
     const FirstToken = await ethers.getContractFactory("FirstToken");
     firstToken = await FirstToken.deploy();
@@ -46,9 +46,19 @@ describe("Add Liquidity", function () {
     await addLiquidity.wait()
     expect(addLiquidity).to.emit(contract, "AddLiquidityEvent")
 
-    const removeLiquidity = await contract.removeLiquidity()
+    const removeLiquidity = await contract.removeLiquidity(firstToken.address, secondToken.address)
     await removeLiquidity.wait()
     expect(removeLiquidity).to.emit(contract, "RemoveLiquidityEvent")
+  });
+
+  it("Should swap ETh to token", async function () {
+    await firstToken.approve(contract.address, ethers.BigNumber.from("1000000000000000000000"))
+    await secondToken.approve(contract.address, ethers.BigNumber.from("1000000000000000000000"))
+    const daiToken = "0xc7AD46e0b8a400Bb3C915120d284AafbA8fc4735";
+
+    const swapToken = await contract.swapEThforTokens(ethers.BigNumber.from("1000000000000000000"), daiToken, { from: admin.address, value: ethers.BigNumber.from("100000000000000000000") })
+    await swapToken.wait()
+    expect(swapToken).to.emit(contract, "TokenSwapEvent")
   });
 
 });
