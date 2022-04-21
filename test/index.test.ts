@@ -22,8 +22,8 @@ describe("Add Liquidity", function () {
     await secondToken.deployed();
 
     // Deploying contract 
-    const LiquidityProvider = await ethers.getContractFactory("LiquidityProvider");
-    contract = await LiquidityProvider.deploy(firstToken.address, secondToken.address);
+    const UniswapTest = await ethers.getContractFactory("UniswapTest");
+    contract = await UniswapTest.deploy(firstToken.address, secondToken.address);
     await contract.deployed();
 
   });

@@ -1,4 +1,4 @@
-## Liquidity Smart Contract
+## Uniswap Smart Contract
 
 This Project is deployed on the Rinkeby testnet
 

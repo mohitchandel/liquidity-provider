@@ -13,11 +13,11 @@ async function main() {
   await secondToken.deployed();
 
   // Deploying contract 
-  const LiquidityProvider = await ethers.getContractFactory("LiquidityProvider");
-  const contract = await LiquidityProvider.deploy(firstToken.address, secondToken.address);
+  const UniswapTest = await ethers.getContractFactory("UniswapTest");
+  const contract = await UniswapTest.deploy(firstToken.address, secondToken.address);
   await contract.deployed();
 
-  console.log("first token:"+firstToken.address," second token:"+secondToken.address, " liquidity contract:"+contract.address)
+  console.log("first token:"+firstToken.address," second token:"+secondToken.address, " Uniswap Test contract:"+contract.address)
 
 }
 

@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./FirstToken.sol";
 import "./SecondToken.sol";
 
-contract LiquidityProvider {
+contract UniswapTest {
     using SafeERC20 for ERC20;
 
     ERC20 public tokenA;
