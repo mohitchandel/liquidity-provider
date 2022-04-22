@@ -30,7 +30,7 @@ Run the tests:
 
 deploy contract to network: 
 
-`npx hardhat run --network rinkeby scripts/deploy.js`
+`npx hardhat run --network rinkeby scripts/deploy.ts`
 
 
 Liquidity provider smart contract will be created after the creation of two ERC20 token (First Token, Second Token) because the liquidity smart contract need parameters of both tokens address in its constructor.
